@@ -1,4 +1,3 @@
-
 streamlit
 pandas
 numpy
@@ -9,3 +8,7 @@ requests
 geopandas
 folium
 jupyter
+Pillow
+streamlit-folium
+python-dotenv
+geopy
