@@ -57,8 +57,8 @@ Con un enfoque accesible y visual, hemos desarrollado una aplicación web utiliz
 ## 📦 Instalación
 
 ```bash
-git clone https://github.com/tu_usuario/tu_repositorio.git
-cd tu_repositorio
+git clone https://github.com/albertogarciai/gebmind.git
+cd gebmind
 pip install -r requirements.txt
 streamlit run app.py
 ```
@@ -77,12 +77,6 @@ streamlit run app.py
 ## 🧑‍💻 Contribución
 
 Este es un proyecto académico. Si quieres contribuir o mejorar alguna funcionalidad, siéntete libre de abrir un PR o crear un issue.
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más información.
 
 ---
 
@@ -146,8 +140,8 @@ The project includes a user-friendly web application built with **Streamlit**, a
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/your_user/your_repository.git
-cd your_repository
+git clone https://github.com/albertogarciai/gebmind.git
+cd gebmind
 pip install -r requirements.txt
 streamlit run app.py
 ```
@@ -166,9 +160,3 @@ streamlit run app.py
 ## 🧑‍💻 Contribution
 
 This is an academic project. Feel free to contribute by opening a pull request or issue.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
