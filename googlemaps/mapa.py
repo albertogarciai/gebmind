@@ -1,7 +1,7 @@
 import pandas as pd
 import folium
 
-df = pd.read_csv("locales.csv")
+df = pd.read_csv("locales_todos.csv")
 df = df.dropna(subset=['latitud', 'longitud'])
 
 mapa = folium.Map(location=[df['latitud'].mean(), df['longitud'].mean()], zoom_start=13)
