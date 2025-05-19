@@ -1,95 +1,98 @@
-# 📍 Geolocalizador de Negocios por Código Postal
 
-Este proyecto permite obtener información detallada de locales y empresas en zonas específicas, utilizando el **Google Places API**. Se consultan los negocios ubicados en uno o varios códigos postales y se guarda la información estructurada en un archivo CSV.
+# 🗺️ Geolocalización y Análisis de Negocios con Google Maps API
 
----
-
-## 🚀 Características
-
-- Consulta automatizada de locales usando Google Places API.
-- Extracción de datos como:
-  - Nombre del local
-  - Dirección
-  - Código postal
-  - Puntuación media
-  - Número de reseñas
-  - Tipo de negocio
-- Exportación directa a `locales.csv`
-- Compatible con múltiples códigos postales.
-- Filtro opcional por tipo de negocio (`restaurant`, `store`, etc.).
-- Uso seguro de credenciales con archivo `.env`.
+Este proyecto permite consultar, procesar y visualizar negocios en la ciudad de Madrid utilizando datos reales georreferenciados a través de la API de Google Places y mapas enriquecidos con `Folium`, `GeoPandas` y `branca`.
 
 ---
 
-## 📂 Estructura del Proyecto
+## 🚀 Funcionalidades principales
 
-```
-geolocalizador/
-├── .env                 # Clave API (NO subir a repositorios públicos)
-├── main.py              # Script principal de ejecución
-├── utils.py             # Funciones auxiliares
-├── requirements.txt     # Dependencias del proyecto
-└── locales.csv          # Salida generada automáticamente
-```
+- Extracción de negocios por tipo y código postal.
+- Limpieza y procesamiento de datos con categorización.
+- Mapas interactivos:
+  - Mapa de calor (densidad por punto)
+  - Nube de puntos codificada por valoración
+  - Visualización por barrio con shapefile
+  - Mapas con leyenda y minimapa
+- Exportación a HTML para compartir o integrar en web.
 
 ---
 
-## 🔧 Instalación
-
-1. **Clona el repositorio o copia los archivos:**
+## 📁 Estructura del proyecto
 
 ```bash
-git clone https://github.com/tu-usuario/geolocalizador.git
-cd geolocalizador
+GOOGLEMAPS/
+│
+├── data/                      # Datos de entrada
+│   ├── locales_todos.csv      # Negocios extraídos por la API
+│   └── Barrios/               # Shapefile con los barrios de Madrid
+│       ├── BARRIOS.shp
+│       ├── BARRIOS.shx
+│       ├── BARRIOS.dbf
+│       ├── BARRIOS.prj
+│       └── BARRIOS.cpg
+│
+├── notebooks/                 # Análisis interactivo
+│   └── gebmind.ipynb
+│
+├── src/                       # Código fuente en Python
+│   ├── main.py                # Scripts de extracción con Google Maps
+│   ├── mapa.py                # Generador de mapas en Folium
+│   └── utils.py               # Funciones de utilidad para geolocalización y limpieza
+│
+├── outputs/                   # Resultados generados
+│   └── mapa_locales.html
+│
+├── .env                       # API Key de Google (no subir)
+├── README.md                  # Este archivo
+└── requirements.txt           # Dependencias del proyecto (opcional)
 ```
 
-2. **Instala las dependencias:**
+---
+
+## 🧰 Requisitos
+
+- Python 3.8+
+- Entorno recomendado: Miniconda o virtualenv
+
+### Instalación de dependencias:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Crea un archivo `.env` con tu clave de API:**
+Ejemplo de `requirements.txt`:
+
+```txt
+pandas
+requests
+folium
+python-dotenv
+geopandas
+branca
+```
+
+---
+
+## 🔐 Variables de entorno
+
+Crea un archivo `.env` en la raíz con tu API Key de Google:
 
 ```env
-GOOGLE_API_KEY=tu_clave_api
+GOOGLE_API_KEY=TU_API_KEY_AQUI
 ```
-
-> Puedes obtener tu clave en [Google Cloud Console](https://console.cloud.google.com/). Asegúrate de habilitar las APIs:
-> - Places API
-> - Geocoding API
 
 ---
 
-## ▶️ Uso
+## 🗺️ Fuentes de datos geográficos
 
-Edita el archivo `main.py` para incluir los códigos postales que quieras procesar:
-
-```python
-codigos_postales = ['28013', '08001', '46001']  # Madrid, Barcelona, Valencia
-tipo = 'restaurant'  # o 'store', 'bar', etc. (opcional)
-```
-
-Luego, ejecuta el script:
-
-```bash
-python main.py
-```
-
-> El archivo `locales.csv` se generará automáticamente con todos los datos extraídos.
+- [API de Google Places](https://developers.google.com/maps/documentation/places/web-service/overview)
+- [Barrios de Madrid (Ayto.)](https://datos.madrid.es/egob/catalogo/300496-0-barrios-madrid)
 
 ---
 
-## 📌 Notas
+## 📌 Autor y créditos
 
-- La API de Google tiene un límite gratuito de $200/mes, suficiente para pruebas.
-- Si hay muchos resultados, se usa `next_page_token` para paginar adecuadamente.
-- Puedes adaptar fácilmente este proyecto para integrarlo con una base de datos o frontend.
-- Si no configuras tipo_negocio, se creará: locales_todos.csv
-    - Si pones tipo_negocio = "restaurant" → se creará: locales_restaurant.csv
+Proyecto realizado como parte del máster en inteligencia artificial con fines de análisis urbano y toma de decisiones geolocalizadas.
 
 ---
-
-## 📘 Licencia
-
-Este proyecto es parte de un trabajo académico. Uso libre con fines educativos.
