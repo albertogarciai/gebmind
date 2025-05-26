@@ -1,0 +1,12 @@
+data:
+  raw_csv: ../data/locales_todos.csv
+  proc_csv: ../data/MAPS_locales_procesado.csv
+model:
+  rf:
+    n_estimators: 100
+    random_state: 42
+  cv:
+    folds: 5
+    test_size: 0.2
+logging:
+  level: INFO

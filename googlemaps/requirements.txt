@@ -1,8 +1,13 @@
-pandas>=1.4
 requests>=2.25
-folium>=0.14
 geopandas>=0.12
 branca>=0.6
 python-dotenv>=0.21
 shapely>=2.0
 matplotlib>=3.5
+pandas==2.0.3
+numpy==1.25.0
+scikit-learn==1.2.2
+haversine==2.7.0
+joblib==1.2.0
+folium==0.14.0
+scipy==1.11.1
