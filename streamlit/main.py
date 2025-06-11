@@ -5,6 +5,10 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
+import folium
+
+from folium import plugins
+from folium.plugins import HeatMap, MiniMap, MarkerCluster
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from PIL import Image
@@ -124,6 +128,43 @@ elif opcion == "Recomendador IA":
             ax.set_title('Comparativa de Valoración')
             st.pyplot(fig)
             st.info(f"Nivel de competencia promedio en la zona: {competencia_count:.0f} locales similares con una media de {competencia_rating:.2f} estrellas.")
+
+            # Mostrar el mapa
+           # Filtrar locales según el código postal seleccionado
+            locales_filtrados = df_reference[df_reference["codigo_postal"] == codigo_postal]
+
+            # Comprobar si hay locales en el código postal filtrado
+            if not locales_filtrados.empty:
+                # Calcular coordenadas medias para centrar el mapa
+                latitud_media = locales_filtrados["latitud"].mean()
+                longitud_media = locales_filtrados["longitud"].mean()
+            else:
+                # Usar coordenadas por defecto si no hay locales
+                latitud_media = 40.4168
+                longitud_media = -3.7038
+
+            # Mostrar el mapa
+            m = folium.Map(
+                location=[latitud_media, longitud_media],
+                zoom_start=14,  # Puedes ajustar el zoom si quieres
+                tiles='https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png',
+                attr='Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
+            )
+
+            # Añadir capa de locales con cluster de marcadores
+            marker_cluster = MarkerCluster().add_to(m)
+
+            for idx, row in locales_filtrados.iterrows():
+                if pd.notnull(row["latitud"]) and pd.notnull(row["longitud"]):
+                    folium.Marker(
+                        location=[row["latitud"], row["longitud"]],
+                        popup=row.get("nombre", "Sin nombre"),
+                        icon=folium.Icon(color="blue", icon="info-sign")
+                    ).add_to(marker_cluster)
+
+            # Guardar el mapa
+            m.save(f"mapa_{codigo_postal}.html")
+
         else:
             st.warning("No hay datos suficientes para el código postal ingresado.")
 
