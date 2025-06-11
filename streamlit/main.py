@@ -2,8 +2,12 @@
 
 import streamlit as st
 import os
-from PIL import Image
 import pandas as pd
+import matplotlib.pyplot as plt
+import pickle
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from PIL import Image
 
 # Configuración general de la página
 st.set_page_config(page_title="Gebmind", page_icon="🌐", layout="wide")
@@ -17,7 +21,7 @@ MODELS_DIR = os.path.join(ASSETS_DIR, "models")  # por si quieres usarlo más ad
 
 # Función para cargar imágenes de forma segura
 def load_image(image_name):
-    image_path = os.path.join(ASSETS_DIR, image_name)
+    image_path = os.path.join(IMAGES_DIR, image_name)
     if os.path.exists(image_path):
         try:
             return Image.open(image_path)
@@ -33,7 +37,7 @@ if logo:
     st.sidebar.image(logo, width=300)
 
 st.sidebar.title("Navegación")
-opcion = st.sidebar.radio("", ("Inicio", "Base de datos", "Nuestros mapas", "Resultados del Modelo", "Contacto", "Quiénes Somos"))
+opcion = st.sidebar.radio("", ("Inicio", "Recomendador IA", "Base de datos", "Nuestros mapas", "Resultados del Modelo", "Contacto", "Quiénes Somos"))
 
 # --- Página de Inicio ---
 if opcion == "Inicio":
@@ -63,6 +67,97 @@ if opcion == "Inicio":
     - **Análisis de la Competencia:** Identifica negocios similares.
     - **Información de Locales:** Características, precios y fotos.
     """)
+
+elif opcion == "Recomendador IA":
+    st.title("🔎 Recomendador IA para Nuevos Negocios")
+
+    # Cargar el dataset de referencia correcto
+    df_reference_path = os.path.join(DATA_DIR, "locales_enriquecido_muestra.csv")
+    df_reference = pd.read_csv(df_reference_path)
+
+    # Cargar el modelo entrenado
+    model_path = os.path.join(MODELS_DIR, "random_forest_model.pkl")
+    with open(model_path, "rb") as file:
+        model = pickle.load(file)
+
+    # Formulario de entrada
+    categoria_negocio = st.selectbox("Seleccione la categoría de negocio:", df_reference['categoria_negocio'].unique())
+    codigo_postal = st.number_input("Ingrese el código postal:", min_value=28000, max_value=28055, step=1)
+
+    if st.button("1️⃣ Generar recomendación"):
+        # Filtrar datos de referencia por código postal
+        df_cp = df_reference[df_reference['codigo_postal'] == codigo_postal]
+
+        if not df_cp.empty:
+            features = [
+                'puntuacion_media', 'numero_reviews', 'categoria_id',
+                'density_500m', 'density_1000m', 'density_2000m',
+                'ratio_500m_2km', 'dist_city_center_km', 'local_density_1km',
+                'dist_city_center_km^2', 'density_1000m^2',
+                'valoracion_norm', 'valoracion_por_cercania',
+                'competencia_count', 'competencia_rating'
+            ]
+
+            user_data = df_cp[features].mean().to_frame().T
+            categoria_mode = df_cp[df_cp['categoria_negocio'] == categoria_negocio]['categoria_id'].mode()
+            if not categoria_mode.empty:
+                user_data['categoria_id'] = categoria_mode[0]
+            else:
+                user_data['categoria_id'] = df_cp['categoria_id'].mode()[0]
+
+            # Predicción
+            valoracion_predicha = model.predict(user_data)[0]
+            valoracion_media_zona = df_cp['valoracion'].mean()
+            competencia_count = df_cp['competencia_count'].mean()
+            competencia_rating = df_cp['competencia_rating'].mean()
+
+            # Guardar resultados en session_state
+            st.session_state['valoracion_predicha'] = valoracion_predicha
+            st.session_state['valoracion_media_zona'] = valoracion_media_zona
+            st.session_state['competencia_count'] = competencia_count
+            st.session_state['competencia_rating'] = competencia_rating
+            st.session_state['codigo_postal'] = codigo_postal
+            st.session_state['categoria_negocio'] = categoria_negocio
+
+            # Mostrar resultados
+            st.success(f"La valoración esperada para un negocio de categoría '{categoria_negocio}' en el CP {codigo_postal} es: {valoracion_predicha:.2f}")
+            fig, ax = plt.subplots()
+            bars = ax.bar(['Predicción', 'Media Zona'], [valoracion_predicha, valoracion_media_zona], color=['green', 'gray'])
+            ax.set_ylabel('Valoración')
+            ax.set_title('Comparativa de Valoración')
+            st.pyplot(fig)
+            st.info(f"Nivel de competencia promedio en la zona: {competencia_count:.0f} locales similares con una media de {competencia_rating:.2f} estrellas.")
+        else:
+            st.warning("No hay datos suficientes para el código postal ingresado.")
+
+    # Botón para descargar el informe PDF
+    if 'valoracion_predicha' in st.session_state:
+        if 'valoracion_predicha' in st.session_state:
+            if st.button("2️⃣ Generar informe PDF"):
+                from datetime import datetime
+                timestamp = datetime.now().strftime("%Y%m%d")
+                output_filename = f"GEBMIND_CP{st.session_state['codigo_postal']}_{timestamp}.pdf"
+                c = canvas.Canvas(output_filename, pagesize=letter)
+                c.setFont("Helvetica-Bold", 16)
+                c.drawString(50, 750, "Informe de Recomendación GEBMIND")
+                c.setFont("Helvetica", 12)
+                c.drawString(50, 720, f"Código Postal: {st.session_state['codigo_postal']}")
+                c.drawString(50, 700, f"Categoría de Negocio: {st.session_state['categoria_negocio']}")
+                c.drawString(50, 680, f"Valoración esperada: {st.session_state['valoracion_predicha']:.2f}")
+                c.drawString(50, 660, f"Media de la zona: {st.session_state['valoracion_media_zona']:.2f}")
+                c.drawString(50, 640, f"Competencia promedio: {st.session_state['competencia_count']:.0f} locales similares")
+                c.drawString(50, 620, f"Valoración media de competencia: {st.session_state['competencia_rating']:.2f} estrellas")
+                c.save()
+
+                with open(output_filename, "rb") as f:
+                    pdf_bytes = f.read()
+                st.success("✅ Informe generado correctamente. ¡Ahora puedes descargarlo!")
+                st.download_button(
+                    label="👌 Descargar Informe PDF",
+                    data=pdf_bytes,
+                    file_name=output_filename,
+                    mime="application/pdf"
+                )
 
 # --- Página de Base de datos ---
 elif opcion == "Base de datos":
