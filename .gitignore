@@ -1,5 +1,5 @@
 Ejecutar desde terminal en la carpeta del proyecto:
-cp ~/Downloads/gitignore_base.txt .gitignore
+cp ~/Github/gitignore_base.txt .gitignore
 
 # --- Python ---
 __pycache__/
